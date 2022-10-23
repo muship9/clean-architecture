@@ -7,24 +7,20 @@ import (
 	"log"
 	"net/http"
 	"simple-todo-api/server/domain/entity"
+	"simple-todo-api/server/infrastractor/datastore/postgres/repository"
 )
 
 // GetTodos DB からデータを全件取得して一覧を返す
 func GetTodos(db *sql.DB, w http.ResponseWriter) {
 
-	// DB から一致する data を取得 -> リクエストした userId を使って取得に変更する
-	rows, err := db.Query("SELECT * FROM todos WHERE user_id = 'testUser'")
-
-	if err != nil {
-		log.Println(err)
-	}
+	rows := repository.GetTodos(db)
 
 	var data []entity.Todos
 
 	// TODOにEntityをマッピングし、返却用のスライスに追加
 	for rows.Next() {
 		todo := entity.Todos{}
-		err = rows.Scan(&todo.TodoId, &todo.Title, &todo.UserId, &todo.Created_at, &todo.Updated_at)
+		err := rows.Scan(&todo.TodoId, &todo.Title, &todo.UserId, &todo.Created_at, &todo.Updated_at)
 		if err != nil {
 			log.Print(err)
 			return
