@@ -1,0 +1,49 @@
+---
+version: "3"
+
+services:
+
+  # API サーバー
+  server:
+    build:
+      context: .
+      dockerfile: ./docker/server/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/go/src
+    command: /bin/sh -c 'air -c .air.toml'
+    environment:
+      - TZ=Asia/Tokyo
+      - DB_WRITER_HOST=db
+      - DB_READER_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=simpleTodoDb
+      - DB_PASSWORD=password
+      - DB_DATABASE=simpleTodoDb
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # DB
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/postgres/Dockerfile
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=simpleTodoDb
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=simpleTodoDb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./docker/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: "psql -h localhost -U simpleTodoDb -c 'SELECT  1'"
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  db_data:
