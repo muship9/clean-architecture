@@ -6,33 +6,8 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"time"
+	"simple-todo-api/server/domain/entity"
 )
-
-type Todos struct {
-	todoId     string
-	title      string
-	userId     string
-	created_at time.Time
-	updated_at time.Time
-}
-
-type EncodeTodo struct {
-	TodoId string `json:"id"`
-	Title  string `json:"title"`
-	UserId string `json:"todo"`
-}
-
-type TodoRequest struct {
-	TodoId string `json:"todoId"`
-	Title  string `json:"title"`
-	UserId string `json:"user_id"`
-}
-
-type EditTodoRequest struct {
-	TodoId string `json:"todoId"`
-	Title  string `json:"title"`
-}
 
 // GetTodos DB からデータを全件取得して一覧を返す
 func GetTodos(db *sql.DB, w http.ResponseWriter) {
@@ -44,12 +19,12 @@ func GetTodos(db *sql.DB, w http.ResponseWriter) {
 		log.Println(err)
 	}
 
-	var data []Todos
+	var data []entity.Todos
 
 	// TODOにEntityをマッピングし、返却用のスライスに追加
 	for rows.Next() {
-		todo := Todos{}
-		err = rows.Scan(&todo.todoId, &todo.title, &todo.userId, &todo.created_at, &todo.updated_at)
+		todo := entity.Todos{}
+		err = rows.Scan(&todo.TodoId, &todo.Title, &todo.UserId, &todo.Created_at, &todo.Updated_at)
 		if err != nil {
 			log.Print(err)
 			return
@@ -58,12 +33,12 @@ func GetTodos(db *sql.DB, w http.ResponseWriter) {
 	}
 
 	// DB から取得した data を Json 構造体 にマッピングする
-	var todoResponses []EncodeTodo
+	var todoResponses []entity.EncodeTodo
 	for _, v := range data {
-		todoResponses = append(todoResponses, EncodeTodo{
-			TodoId: v.todoId,
-			Title:  v.title,
-			UserId: v.userId,
+		todoResponses = append(todoResponses, entity.EncodeTodo{
+			TodoId: v.TodoId,
+			Title:  v.Title,
+			UserId: v.UserId,
 		})
 	}
 	output, _ := json.MarshalIndent(todoResponses, "", "\t\t")
@@ -75,12 +50,12 @@ func GetTodos(db *sql.DB, w http.ResponseWriter) {
 
 // AddTodo クライアントから送られてきたデータをもとに DB に追加
 func AddTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	var todo Todos
+	var todo entity.Todos
 	var err error
 	body := make([]byte, r.ContentLength)
 	r.Body.Read(body)
 
-	var todoRequest TodoRequest
+	var todoRequest entity.TodoRequest
 
 	err = json.Unmarshal(body, &todoRequest)
 	if err != nil {
@@ -93,13 +68,13 @@ func AddTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		todoRequest.TodoId = uuid.NewString()
 	}
 
-	todo = Todos{
-		todoId: todoRequest.TodoId,
-		title:  todoRequest.Title,
-		userId: todoRequest.UserId,
+	todo = entity.Todos{
+		TodoId: todoRequest.TodoId,
+		Title:  todoRequest.Title,
+		UserId: todoRequest.UserId,
 	}
 
-	_, err = db.Exec("INSERT INTO todos (todo_id , title , user_id) VALUES ($1, $2 ,$3)", todo.todoId, todo.title, todo.userId)
+	_, err = db.Exec("INSERT INTO todos (todo_id , title , user_id) VALUES ($1, $2 ,$3)", todo.TodoId, todo.Title, todo.UserId)
 	if err != nil {
 		log.Print(err)
 		return
@@ -113,12 +88,12 @@ func AddTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 // EditTodo クライアントから送られてきたデータをもとに DB を更新する
 func EditTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	var todos Todos
+	var todos entity.Todos
 	var err error
 	body := make([]byte, r.ContentLength)
 	r.Body.Read(body)
 
-	var editTodoRequest EditTodoRequest
+	var editTodoRequest entity.EditTodoRequest
 
 	err = json.Unmarshal(body, &editTodoRequest)
 	if err != nil {
@@ -127,18 +102,18 @@ func EditTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todos = Todos{
-		todoId: editTodoRequest.TodoId,
-		title:  editTodoRequest.Title,
+	todos = entity.Todos{
+		TodoId: editTodoRequest.TodoId,
+		Title:  editTodoRequest.Title,
 	}
 
-	if todos.todoId == "" {
+	if todos.TodoId == "" {
 		w.WriteHeader(400)
 		w.Write([]byte("TodoId がないため処理を中断します。"))
 		return
 	}
 
-	_, err = db.Exec("UPDATE todos SET title = $1 WHERE todo_id = $2", todos.title, todos.todoId)
+	_, err = db.Exec("UPDATE todos SET title = $1 WHERE todo_id = $2", todos.Title, todos.TodoId)
 
 	if err != nil {
 		w.WriteHeader(500)
@@ -154,12 +129,12 @@ func EditTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 // DeleteTodo 指定データを DB から削除する
 func DeleteTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	var todo Todos
+	var todo entity.Todos
 	var err error
 	body := make([]byte, r.ContentLength)
 	r.Body.Read(body)
 
-	var todoRequest TodoRequest
+	var todoRequest entity.TodoRequest
 
 	err = json.Unmarshal(body, &todoRequest)
 	if err != nil {
@@ -168,19 +143,19 @@ func DeleteTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todo = Todos{
-		todoId: todoRequest.TodoId,
-		title:  todoRequest.Title,
-		userId: todoRequest.UserId,
+	todo = entity.Todos{
+		TodoId: todoRequest.TodoId,
+		Title:  todoRequest.Title,
+		UserId: todoRequest.UserId,
 	}
 
-	if todo.todoId == "" {
+	if todo.TodoId == "" {
 		w.WriteHeader(400)
 		w.Write([]byte("TodoId がないため処理を中断します。"))
 		return
 	}
 
-	_, err = db.Exec("DELETE FROM todos WHERE todo_id = $1", todo.todoId)
+	_, err = db.Exec("DELETE FROM todos WHERE todo_id = $1", todo.TodoId)
 
 	if err != nil {
 		w.WriteHeader(500)
