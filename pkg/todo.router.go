@@ -1,13 +1,13 @@
 package pkg
 
 import (
+	"cleanArchitecture/server/domain/entity"
+	"cleanArchitecture/server/infrastractor/datastore/postgres/repository"
 	"database/sql"
 	"encoding/json"
 	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"simple-todo-api/server/domain/entity"
-	"simple-todo-api/server/infrastractor/datastore/postgres/repository"
 )
 
 // GetTodos DB からデータを全件取得して一覧を返す

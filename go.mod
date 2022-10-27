@@ -1,4 +1,4 @@
-module simple-todo-api
+module cleanArchitecture
 
 go 1.18
 

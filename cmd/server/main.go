@@ -1,9 +1,9 @@
 package main
 
 import (
+	"cleanArchitecture/pkg"
 	"log"
 	"net/http"
-	"simple-todo-api/pkg"
 )
 
 // メイン関数
