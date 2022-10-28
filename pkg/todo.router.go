@@ -70,7 +70,7 @@ func AddTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		UserId: todoRequest.UserId,
 	}
 
-	_, err = db.Exec("INSERT INTO todos (todo_id , title , user_id) VALUES ($1, $2 ,$3)", todo.TodoId, todo.Title, todo.UserId)
+	err = repository.AddTodos(db, todo)
 	if err != nil {
 		log.Print(err)
 		return
