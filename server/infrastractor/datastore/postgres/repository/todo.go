@@ -25,3 +25,13 @@ func AddTodos(db *sql.DB, todo entity.Todos) error {
 	}
 	return nil
 }
+
+func EditTodo(db *sql.DB, todos entity.Todos) error {
+	_, err := db.Exec("UPDATE todos SET title = $1 WHERE todo_id = $2", todos.Title, todos.TodoId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -109,7 +109,7 @@ func EditTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("UPDATE todos SET title = $1 WHERE todo_id = $2", todos.Title, todos.TodoId)
+	err = repository.EditTodo(db, todos)
 
 	if err != nil {
 		w.WriteHeader(500)
