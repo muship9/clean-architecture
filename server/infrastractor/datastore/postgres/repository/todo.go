@@ -35,3 +35,13 @@ func EditTodo(db *sql.DB, todos entity.Todos) error {
 
 	return nil
 }
+
+func DeleteTodo(db *sql.DB, todo entity.Todos) error {
+	_, err := db.Exec("DELETE FROM todos WHERE todo_id = $1", todo.TodoId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

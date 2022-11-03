@@ -151,7 +151,7 @@ func DeleteTodo(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("DELETE FROM todos WHERE todo_id = $1", todo.TodoId)
+	err = repository.DeleteTodo(db, todo)
 
 	if err != nil {
 		w.WriteHeader(500)
