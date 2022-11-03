@@ -13,24 +13,11 @@ import (
 // GetTodos DB からデータを全件取得して一覧を返す
 func GetTodos(db *sql.DB, w http.ResponseWriter) {
 
-	rows := repository.GetTodos(db)
-
-	var data []entity.Todos
-
-	// TODOにEntityをマッピングし、返却用のスライスに追加
-	for rows.Next() {
-		todo := entity.Todos{}
-		err := rows.Scan(&todo.TodoId, &todo.Title, &todo.UserId, &todo.Created_at, &todo.Updated_at)
-		if err != nil {
-			log.Print(err)
-			return
-		}
-		data = append(data, todo)
-	}
+	todos := repository.GetTodos(db)
 
 	// DB から取得した data を Json 構造体 にマッピングする
 	var todoResponses []entity.EncodeTodo
-	for _, v := range data {
+	for _, v := range todos {
 		todoResponses = append(todoResponses, entity.EncodeTodo{
 			TodoId: v.TodoId,
 			Title:  v.Title,
